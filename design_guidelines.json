@@ -1,0 +1,150 @@
+{
+  "identity": {
+    "name": "E1",
+    "role": "The Anti-AI Designer",
+    "principles": [
+      "Fusion over Imitation",
+      "Emotion First",
+      "Content is King",
+      "Zoom In",
+      "Negative Space",
+      "Contrast"
+    ]
+  },
+  "project_context": {
+    "app_name": "Outlook AI Classifier",
+    "app_type": "Productivity Dashboard",
+    "target_audience": "Professionals with high email volume",
+    "emotional_tone": "Clarity, Speed, Control, Precision",
+    "theme_strategy": "The Linear Swiss (Archetype 4 variant)"
+  },
+  "typography": {
+    "font_family_headings": "Satoshi, 'Plus Jakarta Sans', sans-serif",
+    "font_family_body": "'Geist Sans', 'Inter', sans-serif",
+    "rules": [
+      "Headings (h1, h2): Tracking tight (-0.02em), Weight 600 or 800. NO default bold.",
+      "Body: Tracking normal, Weight 400.",
+      "Labels/Overlines: Uppercase, Tracking wide (0.1em), Text-xs, Weight 500.",
+      "Numbers/Data: Use tabular-nums for all metrics and dates."
+    ]
+  },
+  "colors": {
+    "palette_name": "Swiss Utility",
+    "background": {
+      "default": "#FFFFFF",
+      "subtle": "#FAFAFA",
+      "sidebar": "#F4F4F5"
+    },
+    "foreground": {
+      "primary": "#09090B",
+      "secondary": "#71717A",
+      "muted": "#A1A1AA"
+    },
+    "accent": {
+      "primary": "#18181B",
+      "ai_confidence_high": "#10B981",
+      "ai_confidence_med": "#F59E0B",
+      "ai_confidence_low": "#EF4444",
+      "brand_highlight": "#2563EB"
+    },
+    "border": {
+      "default": "#E4E4E7",
+      "active": "#27272A"
+    },
+    "rules": [
+      "NO Gradients on backgrounds.",
+      "NO Drop Shadows on cards (use 1px borders instead).",
+      "Primary Action Buttons: Solid Black (#18181B) with White Text.",
+      "Secondary Buttons: White with Border (#E4E4E7) and Black Text.",
+      "Destructive Actions: White with Red Text and Red Border (No solid red buttons)."
+    ]
+  },
+  "layout": {
+    "grid_system": "Bento Grid Mode B (High Density)",
+    "spacing_scale": "Tailwind (p-4, p-6, p-8)",
+    "container_style": "Fluid with max-w-screen-2xl",
+    "sidebar_width": "w-64 (expanded) / w-16 (collapsed)",
+    "rules": [
+      "Dashboard: Split view. Left 40% (List), Right 60% (Detail).",
+      "Mobile: Stacked view. List takes 100%, Detail opens as full-screen drawer.",
+      "Padding: Use p-6 or p-8 for main content areas to allow breathing room.",
+      "Borders: Use 'divide-y' and 'divide-x' utilities for grid separation instead of gaps."
+    ]
+  },
+  "components": {
+    "buttons": {
+      "style": "Sharp corners (rounded-md) or Full Pill (rounded-full). Consistency is key.",
+      "interaction": "Scale down slightly on click (active:scale-95)."
+    },
+    "cards": {
+      "style": "Flat, 1px border (border-zinc-200), bg-white. NO SHADOW.",
+      "hover": "bg-zinc-50 transition-colors duration-200."
+    },
+    "inputs": {
+      "style": "bg-transparent, border-b (border-zinc-200), focus:border-black. Minimalist 'Line' style for search.",
+      "standard": "Shadcn Input with rounded-md and border-zinc-200."
+    },
+    "email_list_item": {
+      "style": "Row layout. Left: Avatar/Icon. Middle: Sender/Subject. Right: Date/Badge.",
+      "interaction": "Hover: bg-zinc-50. Selected: bg-zinc-100 + border-l-2 border-black."
+    },
+    "ai_badge": {
+      "style": "Pill shape, text-xs, font-medium. Ring-1 ring-inset.",
+      "variants": {
+        "high": "bg-emerald-50 text-emerald-700 ring-emerald-600/20",
+        "medium": "bg-amber-50 text-amber-700 ring-amber-600/20",
+        "low": "bg-red-50 text-red-700 ring-red-600/20"
+      }
+    }
+  },
+  "visual_assets": {
+    "icons_library": "lucide-react",
+    "image_urls": {
+      "empty_state": "https://images.unsplash.com/photo-1692889783742-7d99b124c402?crop=entropy&cs=srgb&fm=jpg&q=85",
+      "ai_processing": "https://images.unsplash.com/photo-1764437358284-4721473936f8?crop=entropy&cs=srgb&fm=jpg&q=85",
+      "connection_success": "https://images.unsplash.com/photo-1762279389053-d5a30239ae45?crop=entropy&cs=srgb&fm=jpg&q=85"
+    },
+    "usage_rules": [
+      "Use 'empty_state' for when no emails are found or folders are empty.",
+      "Use 'ai_processing' as a subtle background or sidebar header when AI is active.",
+      "Use 'connection_success' for the OAuth success page."
+    ]
+  },
+  "motion": {
+    "library": "framer-motion",
+    "transitions": "type: 'spring', stiffness: 300, damping: 30",
+    "rules": [
+      "Page Transitions: Opacity fade (0 to 1) + slight y-axis slide (10px to 0).",
+      "List Items: Staggered entrance (0.05s delay per item).",
+      "Hover: Fast (0.2s) ease-out."
+    ]
+  },
+  "accessibility": {
+    "rules": [
+      "Contrast: Ensure text is Zinc-900 on White, or Zinc-500 on White (for secondary).",
+      "Focus Rings: Visible ring-2 ring-offset-2 ring-black on all interactive elements.",
+      "ARIA: Use Radix UI primitives (via Shadcn) to ensure full keyboard navigation."
+    ]
+  },
+  "anti_patterns": [
+    "DO NOT use gradients for buttons.",
+    "DO NOT use 'Inter' font if 'Geist' or 'Satoshi' is available (simulate via Google Fonts or local).",
+    "DO NOT center text in the email list. Always left-align.",
+    "DO NOT use heavy drop shadows."
+  ],
+  "instructions_to_main_agent": [
+    "1. Install 'lucide-react' and 'framer-motion' if not present.",
+    "2. Configure Tailwind colors to match the 'Swiss Utility' palette in `tailwind.config.js`.",
+    "3. Create a 'Layout' component that implements the Sidebar + Main Area structure.",
+    "4. Use the provided Image URLs for the specific states mentioned.",
+    "5. When building the Email List, prioritize DENSITY. Do not make rows too tall (h-12 or h-14 is good).",
+    "6. For the 'AI Classification' feature, use a 'Toast' (Sonner) to show progress, not a full-screen modal."
+  ],
+  "universal_guidelines": [
+    "Dark colors look good when used independently without gradients.",
+    "Create depth through layered design elements with z-index hierarchy.",
+    "Use glass-morphism effects with backdrop filters (12-24px blur) ONLY for sticky headers.",
+    "Every interaction needs micro-animations.",
+    "Use 2-3x more spacing than feels comfortable in the 'Detail' view, but keep the 'List' view dense."
+  ]
+}
