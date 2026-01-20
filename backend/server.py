@@ -388,36 +388,48 @@ async def logout(token: str = Query(...)):
 
 @mail_router.get("/folders", response_model=List[FolderInfo])
 async def get_folders(token: str = Query(...)):
-    """Get all mail folders"""
+    """Get all mail folders including subfolders"""
     user = await get_current_user(token)
     
-    async with httpx.AsyncClient() as http_client:
-        response = await http_client.get(
-            "https://graph.microsoft.com/v1.0/me/mailFolders",
-            headers={"Authorization": f"Bearer {user.access_token}"},
-            params={
-                "$select": "id,displayName,parentFolderId,childFolderCount,unreadItemCount,totalItemCount",
-                "$top": 100
-            }
-        )
+    all_folders = []
+    
+    async def fetch_folders(parent_id: str = None):
+        """Recursively fetch folders"""
+        if parent_id:
+            url = f"https://graph.microsoft.com/v1.0/me/mailFolders/{parent_id}/childFolders"
+        else:
+            url = "https://graph.microsoft.com/v1.0/me/mailFolders"
         
-        if response.status_code != 200:
-            logger.error(f"Failed to get folders: {response.text}")
-            raise HTTPException(status_code=response.status_code, detail="Failed to get folders")
-        
-        data = response.json()
-        folders = []
-        for folder in data.get('value', []):
-            folders.append(FolderInfo(
-                id=folder['id'],
-                display_name=folder['displayName'],
-                parent_folder_id=folder.get('parentFolderId'),
-                child_folder_count=folder.get('childFolderCount', 0),
-                unread_item_count=folder.get('unreadItemCount', 0),
-                total_item_count=folder.get('totalItemCount', 0)
-            ))
-        
-        return folders
+        async with httpx.AsyncClient() as http_client:
+            response = await http_client.get(
+                url,
+                headers={"Authorization": f"Bearer {user.access_token}"},
+                params={
+                    "$select": "id,displayName,parentFolderId,childFolderCount,unreadItemCount,totalItemCount",
+                    "$top": 100
+                }
+            )
+            
+            if response.status_code != 200:
+                return
+            
+            data = response.json()
+            for folder in data.get('value', []):
+                all_folders.append(FolderInfo(
+                    id=folder['id'],
+                    display_name=folder['displayName'],
+                    parent_folder_id=folder.get('parentFolderId'),
+                    child_folder_count=folder.get('childFolderCount', 0),
+                    unread_item_count=folder.get('unreadItemCount', 0),
+                    total_item_count=folder.get('totalItemCount', 0)
+                ))
+                
+                # Fetch subfolders if any
+                if folder.get('childFolderCount', 0) > 0:
+                    await fetch_folders(folder['id'])
+    
+    await fetch_folders()
+    return all_folders
 
 
 @mail_router.get("/folders/{folder_id}/children", response_model=List[FolderInfo])
