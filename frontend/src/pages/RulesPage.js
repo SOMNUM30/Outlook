@@ -152,7 +152,7 @@ const RulesPage = () => {
 
     // Handle folder selection
     const handleFolderSelect = (folderId) => {
-        const folder = folders.find(f => f.id === folderId);
+        const folder = folderTree.find(f => f.id === folderId);
         setFormData(prev => ({
             ...prev,
             target_folder_id: folderId,
