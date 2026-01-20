@@ -397,29 +397,20 @@ const DashboardPage = () => {
                             
                             {/* Load More Button */}
                             {messages.length > 0 && (
-                                <div className="sticky bottom-0 p-3 bg-white border-t border-[#E4E4E7] shadow-sm">
+                                <div className="sticky bottom-0 left-0 p-2 bg-white border-t border-[#E4E4E7] shadow-sm">
                                     {hasMore && messages.length < 2500 ? (
                                         <Button
                                             variant="outline"
-                                            className="w-full"
+                                            size="sm"
                                             onClick={loadMoreMessages}
                                             disabled={isLoadingMore}
                                             data-testid="load-more-button"
                                         >
-                                            {isLoadingMore ? (
-                                                <>
-                                                    <div className="spinner w-4 h-4 mr-2"></div>
-                                                    Chargement...
-                                                </>
-                                            ) : (
-                                                <>
-                                                    Charger plus ({messages.length} chargés)
-                                                </>
-                                            )}
+                                            {isLoadingMore ? "Chargement..." : `+ Charger plus (${messages.length})`}
                                         </Button>
                                     ) : (
-                                        <p className="text-center text-sm text-[#71717A]">
-                                            {messages.length} email(s) - Tout affiché
+                                        <p className="text-xs text-[#71717A]">
+                                            {messages.length} emails - Tout affiché
                                         </p>
                                     )}
                                 </div>
