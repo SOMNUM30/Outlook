@@ -262,7 +262,7 @@ async def login():
     """Initiate Microsoft OAuth login"""
     if not MS_CLIENT_ID:
         raise HTTPException(
-            status_code=500, 
+            status_code=503, 
             detail="Microsoft OAuth not configured. Please set MS_CLIENT_ID, MS_CLIENT_SECRET, and MS_REDIRECT_URI in environment variables."
         )
     
