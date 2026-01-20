@@ -204,9 +204,9 @@ async def get_current_user(token: str) -> UserToken:
 
 
 async def classify_email_with_ai(email_body: str, email_subject: str, rules: List[Dict]) -> Dict:
-    """Use GPT-5.2 to classify email content"""
-    if not EMERGENT_LLM_KEY:
-        return {"folder": None, "rule": None, "confidence": 0}
+    """Use OpenAI GPT to classify email content"""
+    if not OPENAI_API_KEY:
+        return {"rule_name": "none", "confidence": 0, "reason": "OpenAI API key not configured"}
     
     rules_description = "\n".join([
         f"- Rule '{r['name']}': {r['description']}. Keywords: {', '.join(r.get('keywords', []))}. AI Prompt: {r.get('ai_prompt', 'N/A')}"
@@ -231,22 +231,27 @@ Respond with a JSON object containing:
 Only respond with the JSON object, no other text."""
 
     try:
-        chat = LlmChat(
-            api_key=EMERGENT_LLM_KEY,
-            session_id=f"classify-{uuid.uuid4()}",
-            system_message="You are an email classification assistant. Analyze emails and match them to the most appropriate classification rule."
-        ).with_model("openai", "gpt-5.2")
+        client = openai.AsyncOpenAI(api_key=OPENAI_API_KEY)
         
-        response = await chat.send_message(UserMessage(text=prompt))
+        response = await client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": "You are an email classification assistant. Analyze emails and match them to the most appropriate classification rule. Respond only with valid JSON."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.3
+        )
+        
+        result_text = response.choices[0].message.content.strip()
         
         # Parse the JSON response
         try:
-            result = json.loads(response.strip())
+            result = json.loads(result_text)
             return result
         except json.JSONDecodeError:
             # Try to extract JSON from response
             import re
-            json_match = re.search(r'\{[^}]+\}', response)
+            json_match = re.search(r'\{[^}]+\}', result_text)
             if json_match:
                 return json.loads(json_match.group())
             return {"rule_name": "none", "confidence": 0, "reason": "Failed to parse AI response"}
