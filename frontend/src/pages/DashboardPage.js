@@ -65,9 +65,9 @@ const DashboardPage = () => {
                 setClassificationResults([]);
                 setMessages([]);
             }
-            const data = await mailApi.getMessages(folderId, 100, 0, filter);
+            const data = await mailApi.getMessages(folderId, 500, 0, filter);
             setMessages(data);
-            setHasMore(data.length === 100);
+            setHasMore(false);
         } catch (error) {
             toast.error('Erreur lors du chargement des emails');
             console.error(error);
