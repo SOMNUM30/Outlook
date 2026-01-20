@@ -82,6 +82,42 @@ const RulesPage = () => {
         }
     }, []);
 
+    // Build folder tree with indentation
+    const buildFolderTree = (folders) => {
+        const folderMap = {};
+        const rootFolders = [];
+        
+        // Create a map of folders
+        folders.forEach(f => {
+            folderMap[f.id] = { ...f, children: [], level: 0 };
+        });
+        
+        // Build tree structure
+        folders.forEach(f => {
+            if (f.parent_folder_id && folderMap[f.parent_folder_id]) {
+                folderMap[f.parent_folder_id].children.push(folderMap[f.id]);
+            } else {
+                rootFolders.push(folderMap[f.id]);
+            }
+        });
+        
+        // Flatten tree with levels
+        const flattenTree = (nodes, level = 0) => {
+            let result = [];
+            nodes.forEach(node => {
+                result.push({ ...node, level });
+                if (node.children.length > 0) {
+                    result = result.concat(flattenTree(node.children, level + 1));
+                }
+            });
+            return result;
+        };
+        
+        return flattenTree(rootFolders);
+    };
+
+    const folderTree = buildFolderTree(folders);
+
     useEffect(() => {
         loadRules();
         loadFolders();
