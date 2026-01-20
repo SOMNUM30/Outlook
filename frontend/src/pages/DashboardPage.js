@@ -275,17 +275,35 @@ const DashboardPage = () => {
                     </div>
 
                     <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                            <Checkbox
-                                checked={selectedMessages.length === messages.length && messages.length > 0}
-                                onCheckedChange={handleSelectAll}
-                                data-testid="select-all-checkbox"
-                            />
-                            <span className="text-sm text-[#71717A]">
-                                {selectedMessages.length > 0 
-                                    ? `${selectedMessages.length} sélectionné(s)` 
-                                    : 'Tout sélectionner'}
-                            </span>
+                        <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-2">
+                                <Checkbox
+                                    checked={selectedMessages.length === messages.length && messages.length > 0}
+                                    onCheckedChange={handleSelectAll}
+                                    data-testid="select-all-checkbox"
+                                />
+                                <span className="text-sm text-[#71717A]">
+                                    {selectedMessages.length > 0 
+                                        ? `${selectedMessages.length} sélectionné(s)` 
+                                        : 'Tout'}
+                                </span>
+                            </div>
+                            
+                            {/* Load More Button */}
+                            {hasMore && messages.length < 2500 && (
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={loadMoreMessages}
+                                    disabled={isLoadingMore}
+                                    data-testid="load-more-button"
+                                >
+                                    {isLoadingMore ? "..." : `+ (${messages.length})`}
+                                </Button>
+                            )}
+                            {!hasMore && messages.length > 0 && (
+                                <span className="text-xs text-[#71717A]">{messages.length} emails</span>
+                            )}
                         </div>
 
                         <div className="flex items-center gap-2">
