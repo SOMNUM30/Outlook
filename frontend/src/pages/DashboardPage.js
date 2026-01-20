@@ -252,10 +252,21 @@ const DashboardPage = () => {
                             </SelectContent>
                         </Select>
 
+                        <Select value={emailFilter} onValueChange={setEmailFilter}>
+                            <SelectTrigger className="w-32" data-testid="filter-select">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="unread">Non lus</SelectItem>
+                                <SelectItem value="read">Lus</SelectItem>
+                                <SelectItem value="all">Tous</SelectItem>
+                            </SelectContent>
+                        </Select>
+
                         <Button
                             variant="outline"
                             size="icon"
-                            onClick={() => loadMessages(selectedFolder)}
+                            onClick={() => loadMessages(selectedFolder, true, emailFilter)}
                             disabled={isLoadingMessages}
                             data-testid="refresh-button"
                         >
