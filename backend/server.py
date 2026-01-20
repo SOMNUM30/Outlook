@@ -209,27 +209,29 @@ async def classify_email_with_ai(email_body: str, email_subject: str, rules: Lis
     if not OPENAI_API_KEY:
         return {"rule_name": "none", "confidence": 0, "reason": "OpenAI API key not configured"}
     
+    # Build rules list with exact names
+    rule_names = [r['name'] for r in rules if r.get('is_active', True)]
     rules_description = "\n".join([
-        f"- Rule '{r['name']}': {r['description']}. Keywords: {', '.join(r.get('keywords', []))}. AI Prompt: {r.get('ai_prompt', 'N/A')}"
+        f"- Rule name: \"{r['name']}\"\n  Description: {r['description']}\n  Keywords: {', '.join(r.get('keywords', []))}\n  Criteria: {r.get('ai_prompt', 'N/A')}"
         for r in rules if r.get('is_active', True)
     ])
     
-    prompt = f"""Analyze this email and determine which folder it should be classified into based on the rules below.
+    prompt = f"""Analyze this email and classify it into one of the rules below.
 
 EMAIL SUBJECT: {email_subject}
 
 EMAIL BODY:
 {email_body[:2000]}
 
-CLASSIFICATION RULES:
+AVAILABLE RULES:
 {rules_description}
 
-Respond with a JSON object containing:
-- "rule_name": the name of the matching rule (or "none" if no match)
-- "confidence": a number between 0 and 1 indicating how confident you are
-- "reason": brief explanation of why this classification was chosen
+IMPORTANT: The rule_name in your response MUST be EXACTLY one of these values: {rule_names} or "none" if no rule matches.
 
-Only respond with the JSON object, no other text."""
+Respond with a JSON object:
+{{"rule_name": "exact rule name from list above", "confidence": 0.0-1.0, "reason": "brief explanation"}}
+
+If the email matches any keywords or criteria from a rule, classify it with that rule. Only respond "none" if the email clearly doesn't match ANY rule."""
 
     try:
         client = openai.AsyncOpenAI(api_key=OPENAI_API_KEY)
@@ -237,10 +239,10 @@ Only respond with the JSON object, no other text."""
         response = await client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
-                {"role": "system", "content": "You are an email classification assistant. Analyze emails and match them to the most appropriate classification rule. Respond only with valid JSON."},
+                {"role": "system", "content": f"You are an email classifier. You MUST return the rule_name as EXACTLY one of: {rule_names} or 'none'. No variations allowed."},
                 {"role": "user", "content": prompt}
             ],
-            temperature=0.3
+            temperature=0.1
         )
         
         result_text = response.choices[0].message.content.strip()
@@ -248,6 +250,13 @@ Only respond with the JSON object, no other text."""
         # Parse the JSON response
         try:
             result = json.loads(result_text)
+            # Verify rule_name is valid
+            if result.get('rule_name') not in rule_names and result.get('rule_name') != 'none':
+                # Try to find closest match
+                for name in rule_names:
+                    if name.lower() in result.get('rule_name', '').lower() or result.get('rule_name', '').lower() in name.lower():
+                        result['rule_name'] = name
+                        break
             return result
         except json.JSONDecodeError:
             # Try to extract JSON from response
