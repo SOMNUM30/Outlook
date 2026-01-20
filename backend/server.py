@@ -469,7 +469,7 @@ async def get_child_folders(folder_id: str, token: str = Query(...)):
 async def get_messages(
     token: str = Query(...),
     folder_id: str = Query(default="inbox"),
-    top: int = Query(default=25, le=50),
+    top: int = Query(default=100, le=200),
     skip: int = Query(default=0)
 ):
     """Get messages from a folder"""
