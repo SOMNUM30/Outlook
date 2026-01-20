@@ -742,10 +742,10 @@ async def analyze_emails(request: ClassifyRequest, token: str = Query(...)):
             logger.error(f"Error processing email {message_id}: {e}")
             return None
     
-    # Process emails in parallel (batch of 5)
+    # Process emails in parallel (batch of 10)
     results = []
     async with httpx.AsyncClient(timeout=60.0) as http_client:
-        batch_size = 5
+        batch_size = 10
         for i in range(0, len(request.message_ids), batch_size):
             batch = request.message_ids[i:i + batch_size]
             batch_results = await asyncio.gather(*[process_email(mid, http_client) for mid in batch])
