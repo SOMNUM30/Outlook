@@ -322,22 +322,23 @@ const DashboardPage = () => {
                             <p className="text-[#71717A]">Aucun email dans ce dossier</p>
                         </div>
                     ) : (
-                        <div className="divide-y divide-[#E4E4E7]">
-                            {messages.map((message, index) => {
-                                const result = getClassificationResult(message.id);
-                                return (
-                                    <div
-                                        key={message.id}
-                                        className={`email-item flex items-start gap-3 p-3 cursor-pointer ${
-                                            selectedEmail === message.id ? 'selected' : ''
-                                        } ${!message.is_read ? 'bg-blue-50/50' : ''}`}
-                                        onClick={() => setSelectedEmail(message.id)}
-                                        data-testid={`email-item-${index}`}
-                                    >
-                                        <Checkbox
-                                            checked={selectedMessages.includes(message.id)}
-                                            onCheckedChange={() => handleSelectMessage(message.id)}
-                                            onClick={(e) => e.stopPropagation()}
+                        <div>
+                            <div className="divide-y divide-[#E4E4E7]">
+                                {messages.map((message, index) => {
+                                    const result = getClassificationResult(message.id);
+                                    return (
+                                        <div
+                                            key={message.id}
+                                            className={`email-item flex items-start gap-3 p-3 cursor-pointer ${
+                                                selectedEmail === message.id ? 'selected' : ''
+                                            } ${!message.is_read ? 'bg-blue-50/50' : ''}`}
+                                            onClick={() => setSelectedEmail(message.id)}
+                                            data-testid={`email-item-${index}`}
+                                        >
+                                            <Checkbox
+                                                checked={selectedMessages.includes(message.id)}
+                                                onCheckedChange={() => handleSelectMessage(message.id)}
+                                                onClick={(e) => e.stopPropagation()}
                                             className="mt-1"
                                         />
                                         <div className="flex-1 min-w-0">
