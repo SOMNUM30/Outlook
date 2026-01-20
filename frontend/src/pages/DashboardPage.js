@@ -302,7 +302,7 @@ const DashboardPage = () => {
                                 </Button>
                             )}
                             {!hasMore && messages.length > 0 && (
-                                <span className="text-xs text-[#71717A]">{messages.length} emails</span>
+                                <span className="text-xs text-[#71717A]">✓ {messages.length} emails (tout chargé)</span>
                             )}
                         </div>
 
