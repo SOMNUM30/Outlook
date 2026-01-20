@@ -337,8 +337,7 @@ async def auth_callback(
         email = user_info.get('mail') or user_info.get('userPrincipalName', '')
         display_name = user_info.get('displayName', email)
         
-        expires_at = datetime.now(timezone.utc).replace(microsecond=0)
-        expires_at = expires_at.replace(second=expires_at.second + expires_in)
+        expires_at = datetime.now(timezone.utc) + timedelta(seconds=expires_in)
         
         # Save or update user token
         user_token = UserToken(
