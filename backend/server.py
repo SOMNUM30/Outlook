@@ -673,6 +673,9 @@ async def toggle_rule(rule_id: str, token: str = Query(...)):
 @classify_router.post("/analyze", response_model=List[ClassifyResult])
 async def analyze_emails(request: ClassifyRequest, token: str = Query(...)):
     """Analyze emails and suggest classifications (without moving)"""
+    import asyncio
+    import re
+    
     user = await get_current_user(token)
     
     # Get rules
@@ -685,10 +688,9 @@ async def analyze_emails(request: ClassifyRequest, token: str = Query(...)):
     if not rules:
         raise HTTPException(status_code=400, detail="No active classification rules found")
     
-    results = []
-    
-    async with httpx.AsyncClient() as http_client:
-        for message_id in request.message_ids:
+    async def process_email(message_id: str, http_client: httpx.AsyncClient):
+        """Process a single email"""
+        try:
             # Get full message content
             response = await http_client.get(
                 f"https://graph.microsoft.com/v1.0/me/messages/{message_id}",
@@ -697,15 +699,14 @@ async def analyze_emails(request: ClassifyRequest, token: str = Query(...)):
             )
             
             if response.status_code != 200:
-                continue
+                return None
             
             msg = response.json()
             subject = msg.get('subject', '')
             body_content = msg.get('body', {}).get('content', '')
             
             # Strip HTML if present
-            import re
-            body_text = re.sub('<[^<]+?>', '', body_content)[:3000]
+            body_text = re.sub('<[^<]+?>', '', body_content)[:2000]
             
             # Classify with AI
             ai_result = await classify_email_with_ai(body_text, subject, rules)
@@ -718,7 +719,7 @@ async def analyze_emails(request: ClassifyRequest, token: str = Query(...)):
                     break
             
             if matched_rule:
-                results.append(ClassifyResult(
+                return ClassifyResult(
                     message_id=message_id,
                     subject=subject,
                     suggested_folder=matched_rule['target_folder_id'],
@@ -726,9 +727,9 @@ async def analyze_emails(request: ClassifyRequest, token: str = Query(...)):
                     rule_applied=matched_rule['name'],
                     confidence=ai_result.get('confidence', 0),
                     moved=False
-                ))
+                )
             else:
-                results.append(ClassifyResult(
+                return ClassifyResult(
                     message_id=message_id,
                     subject=subject,
                     suggested_folder="",
@@ -736,7 +737,19 @@ async def analyze_emails(request: ClassifyRequest, token: str = Query(...)):
                     rule_applied="none",
                     confidence=0,
                     moved=False
-                ))
+                )
+        except Exception as e:
+            logger.error(f"Error processing email {message_id}: {e}")
+            return None
+    
+    # Process emails in parallel (batch of 5)
+    results = []
+    async with httpx.AsyncClient(timeout=60.0) as http_client:
+        batch_size = 5
+        for i in range(0, len(request.message_ids), batch_size):
+            batch = request.message_ids[i:i + batch_size]
+            batch_results = await asyncio.gather(*[process_email(mid, http_client) for mid in batch])
+            results.extend([r for r in batch_results if r is not None])
     
     return results
 
