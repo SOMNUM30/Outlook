@@ -133,8 +133,8 @@ const DashboardPage = () => {
     }, [loadFolders, loadRules, loadStats]);
 
     useEffect(() => {
-        loadMessages(selectedFolder);
-    }, [selectedFolder, loadMessages]);
+        loadMessages(selectedFolder, true, emailFilter);
+    }, [selectedFolder, emailFilter, loadMessages]);
 
     useEffect(() => {
         if (selectedEmail) {
