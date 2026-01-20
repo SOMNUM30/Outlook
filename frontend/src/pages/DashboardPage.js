@@ -34,10 +34,12 @@ const DashboardPage = () => {
     const [emailDetail, setEmailDetail] = useState(null);
     const [isLoadingFolders, setIsLoadingFolders] = useState(true);
     const [isLoadingMessages, setIsLoadingMessages] = useState(false);
+    const [isLoadingMore, setIsLoadingMore] = useState(false);
     const [isClassifying, setIsClassifying] = useState(false);
     const [classificationResults, setClassificationResults] = useState([]);
     const [rules, setRules] = useState([]);
     const [stats, setStats] = useState(null);
+    const [hasMore, setHasMore] = useState(true);
 
     // Load folders
     const loadFolders = useCallback(async () => {
