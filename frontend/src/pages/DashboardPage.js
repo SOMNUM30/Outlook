@@ -290,7 +290,7 @@ const DashboardPage = () => {
                             </div>
                             
                             {/* Load More Button */}
-                            {hasMore && messages.length < 500 && (
+                            {messages.length > 0 && messages.length < 500 && (
                                 <Button
                                     variant="outline"
                                     size="sm"
@@ -301,8 +301,8 @@ const DashboardPage = () => {
                                     {isLoadingMore ? "..." : `+ Charger plus (${messages.length})`}
                                 </Button>
                             )}
-                            {(!hasMore || messages.length >= 500) && messages.length > 0 && (
-                                <span className="text-xs text-[#71717A]">✓ {messages.length} emails</span>
+                            {messages.length >= 500 && (
+                                <span className="text-xs text-[#71717A]">✓ {messages.length} emails (max)</span>
                             )}
                         </div>
 
