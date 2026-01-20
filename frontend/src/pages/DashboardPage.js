@@ -412,27 +412,6 @@ const DashboardPage = () => {
                                 );
                             })}
                             </div>
-                            
-                            {/* Load More Button */}
-                            {messages.length > 0 && (
-                                <div className="sticky bottom-0 left-0 p-2 bg-white border-t border-[#E4E4E7] shadow-sm">
-                                    {hasMore && messages.length < 2500 ? (
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={loadMoreMessages}
-                                            disabled={isLoadingMore}
-                                            data-testid="load-more-button"
-                                        >
-                                            {isLoadingMore ? "Chargement..." : `+ Charger plus (${messages.length})`}
-                                        </Button>
-                                    ) : (
-                                        <p className="text-xs text-[#71717A]">
-                                            {messages.length} emails - Tout affiché
-                                        </p>
-                                    )}
-                                </div>
-                            )}
                         </div>
                     )}
                 </ScrollArea>
