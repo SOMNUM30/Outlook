@@ -31,7 +31,7 @@ MS_REDIRECT_URI = os.environ.get('MS_REDIRECT_URI', '')
 MS_SCOPES = 'openid profile email offline_access Mail.Read Mail.ReadWrite MailboxSettings.Read'
 
 # OpenAI Configuration
-EMERGENT_LLM_KEY = os.environ.get('EMERGENT_LLM_KEY', '')
+OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY', '')
 
 # Create the main app
 app = FastAPI(title="Outlook AI Classifier")
