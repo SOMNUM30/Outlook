@@ -12,7 +12,7 @@ import uuid
 from datetime import datetime, timezone
 import httpx
 import urllib.parse
-from emergentintegrations.llm.chat import LlmChat, UserMessage
+import openai
 import json
 
 ROOT_DIR = Path(__file__).parent
