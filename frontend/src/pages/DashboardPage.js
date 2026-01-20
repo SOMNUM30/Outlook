@@ -396,33 +396,34 @@ const DashboardPage = () => {
                             </div>
                             
                             {/* Load More Button */}
-                            {hasMore && messages.length < 2500 && (
+                            {messages.length > 0 && (
                                 <div className="p-4 border-t border-[#E4E4E7]">
-                                    <Button
-                                        variant="outline"
-                                        className="w-full"
-                                        onClick={loadMoreMessages}
-                                        disabled={isLoadingMore}
-                                        data-testid="load-more-button"
-                                    >
-                                        {isLoadingMore ? (
-                                            <>
-                                                <div className="spinner w-4 h-4 mr-2"></div>
-                                                Chargement...
-                                            </>
-                                        ) : (
-                                            <>
-                                                Charger plus ({messages.length} / 2500 max)
-                                            </>
-                                        )}
-                                    </Button>
+                                    {hasMore && messages.length < 2500 ? (
+                                        <Button
+                                            variant="outline"
+                                            className="w-full"
+                                            onClick={loadMoreMessages}
+                                            disabled={isLoadingMore}
+                                            data-testid="load-more-button"
+                                        >
+                                            {isLoadingMore ? (
+                                                <>
+                                                    <div className="spinner w-4 h-4 mr-2"></div>
+                                                    Chargement...
+                                                </>
+                                            ) : (
+                                                <>
+                                                    Charger plus ({messages.length} chargés)
+                                                </>
+                                            )}
+                                        </Button>
+                                    ) : (
+                                        <p className="text-center text-sm text-[#71717A]">
+                                            {messages.length} email(s) chargé(s) - Tous les emails sont affichés
+                                        </p>
+                                    )}
                                 </div>
                             )}
-                            
-                            {/* Email count */}
-                            <div className="p-2 text-center text-xs text-[#71717A] border-t border-[#E4E4E7]">
-                                {messages.length} email(s) chargé(s)
-                            </div>
                         </div>
                     )}
                 </ScrollArea>
