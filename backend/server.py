@@ -188,7 +188,7 @@ async def get_current_user(token: str) -> UserToken:
         # Try to refresh
         new_tokens = await refresh_access_token(user_data['refresh_token'])
         if new_tokens:
-        new_expires = datetime.now(timezone.utc) + timedelta(seconds=new_tokens['expires_in'])
+            new_expires = datetime.now(timezone.utc) + timedelta(seconds=new_tokens['expires_in'])
             await db.user_tokens.update_one(
                 {"user_id": user_data['user_id']},
                 {"$set": {
