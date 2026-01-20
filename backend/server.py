@@ -470,21 +470,34 @@ async def get_messages(
     token: str = Query(...),
     folder_id: str = Query(default="inbox"),
     top: int = Query(default=100, le=500),
-    skip: int = Query(default=0)
+    skip: int = Query(default=0),
+    filter_read: str = Query(default="all")  # 'all', 'unread', 'read'
 ):
     """Get messages from a folder"""
     user = await get_current_user(token)
+    
+    # Build filter
+    filter_query = None
+    if filter_read == "unread":
+        filter_query = "isRead eq false"
+    elif filter_read == "read":
+        filter_query = "isRead eq true"
+    
+    params = {
+        "$select": "id,subject,from,receivedDateTime,bodyPreview,isRead,parentFolderId",
+        "$top": top,
+        "$skip": skip,
+        "$orderby": "receivedDateTime desc"
+    }
+    
+    if filter_query:
+        params["$filter"] = filter_query
     
     async with httpx.AsyncClient() as http_client:
         response = await http_client.get(
             f"https://graph.microsoft.com/v1.0/me/mailFolders/{folder_id}/messages",
             headers={"Authorization": f"Bearer {user.access_token}"},
-            params={
-                "$select": "id,subject,from,receivedDateTime,bodyPreview,isRead,parentFolderId",
-                "$top": top,
-                "$skip": skip,
-                "$orderby": "receivedDateTime desc"
-            }
+            params=params
         )
         
         if response.status_code != 200:
