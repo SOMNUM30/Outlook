@@ -284,11 +284,13 @@ const RulesPage = () => {
                                         <SelectValue placeholder="Sélectionner un dossier" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {folders.map((folder) => (
+                                        {folderTree.map((folder) => (
                                             <SelectItem key={folder.id} value={folder.id}>
                                                 <div className="flex items-center gap-2">
-                                                    <FolderOpen className="w-4 h-4" />
-                                                    {folder.display_name}
+                                                    <span style={{ marginLeft: `${folder.level * 16}px` }} className="flex items-center gap-2">
+                                                        <FolderOpen className="w-4 h-4" />
+                                                        {folder.display_name}
+                                                    </span>
                                                 </div>
                                             </SelectItem>
                                         ))}
