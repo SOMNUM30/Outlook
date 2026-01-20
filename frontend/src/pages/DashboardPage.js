@@ -56,13 +56,17 @@ const DashboardPage = () => {
     }, []);
 
     // Load messages
-    const loadMessages = useCallback(async (folderId) => {
+    const loadMessages = useCallback(async (folderId, reset = true) => {
         try {
             setIsLoadingMessages(true);
-            setSelectedMessages([]);
-            setClassificationResults([]);
-            const data = await mailApi.getMessages(folderId);
+            if (reset) {
+                setSelectedMessages([]);
+                setClassificationResults([]);
+                setMessages([]);
+            }
+            const data = await mailApi.getMessages(folderId, 250, 0);
             setMessages(data);
+            setHasMore(data.length === 250);
         } catch (error) {
             toast.error('Erreur lors du chargement des emails');
             console.error(error);
@@ -70,6 +74,25 @@ const DashboardPage = () => {
             setIsLoadingMessages(false);
         }
     }, []);
+
+    // Load more messages
+    const loadMoreMessages = useCallback(async () => {
+        try {
+            setIsLoadingMore(true);
+            const data = await mailApi.getMessages(selectedFolder, 250, messages.length);
+            if (data.length > 0) {
+                setMessages(prev => [...prev, ...data]);
+                setHasMore(data.length === 250 && messages.length + data.length < 2500);
+            } else {
+                setHasMore(false);
+            }
+        } catch (error) {
+            toast.error('Erreur lors du chargement des emails');
+            console.error(error);
+        } finally {
+            setIsLoadingMore(false);
+        }
+    }, [selectedFolder, messages.length]);
 
     // Load email detail
     const loadEmailDetail = useCallback(async (messageId) => {
