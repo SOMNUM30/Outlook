@@ -471,27 +471,31 @@ async def get_messages(
     folder_id: str = Query(default="inbox"),
     top: int = Query(default=100, le=500),
     skip: int = Query(default=0),
-    filter_read: str = Query(default="all")  # 'all', 'unread', 'read'
+    filter_read: str = Query(default="all"),  # 'all', 'unread', 'read'
+    exclude_flagged: bool = Query(default=True)  # Exclude pinned/flagged emails
 ):
     """Get messages from a folder"""
     user = await get_current_user(token)
     
     # Build filter
-    filter_query = None
+    filters = []
     if filter_read == "unread":
-        filter_query = "isRead eq false"
+        filters.append("isRead eq false")
     elif filter_read == "read":
-        filter_query = "isRead eq true"
+        filters.append("isRead eq true")
+    
+    if exclude_flagged:
+        filters.append("flag/flagStatus ne 'flagged'")
     
     params = {
-        "$select": "id,subject,from,receivedDateTime,bodyPreview,isRead,parentFolderId",
+        "$select": "id,subject,from,receivedDateTime,bodyPreview,isRead,parentFolderId,flag",
         "$top": top,
         "$skip": skip,
         "$orderby": "receivedDateTime desc"
     }
     
-    if filter_query:
-        params["$filter"] = filter_query
+    if filters:
+        params["$filter"] = " and ".join(filters)
     
     async with httpx.AsyncClient() as http_client:
         response = await http_client.get(
