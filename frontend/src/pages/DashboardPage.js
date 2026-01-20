@@ -57,7 +57,7 @@ const DashboardPage = () => {
     }, []);
 
     // Load messages
-    const loadMessages = useCallback(async (folderId, reset = true) => {
+    const loadMessages = useCallback(async (folderId, reset = true, filter = 'unread') => {
         try {
             setIsLoadingMessages(true);
             if (reset) {
@@ -65,7 +65,7 @@ const DashboardPage = () => {
                 setClassificationResults([]);
                 setMessages([]);
             }
-            const data = await mailApi.getMessages(folderId, 250, 0);
+            const data = await mailApi.getMessages(folderId, 250, 0, filter);
             setMessages(data);
             setHasMore(data.length === 250);
         } catch (error) {
@@ -80,7 +80,7 @@ const DashboardPage = () => {
     const loadMoreMessages = useCallback(async () => {
         try {
             setIsLoadingMore(true);
-            const data = await mailApi.getMessages(selectedFolder, 250, messages.length);
+            const data = await mailApi.getMessages(selectedFolder, 250, messages.length, emailFilter);
             if (data.length > 0) {
                 setMessages(prev => [...prev, ...data]);
                 setHasMore(data.length === 250 && messages.length + data.length < 2500);
@@ -93,7 +93,7 @@ const DashboardPage = () => {
         } finally {
             setIsLoadingMore(false);
         }
-    }, [selectedFolder, messages.length]);
+    }, [selectedFolder, messages.length, emailFilter]);
 
     // Load email detail
     const loadEmailDetail = useCallback(async (messageId) => {
