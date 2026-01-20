@@ -397,7 +397,7 @@ const DashboardPage = () => {
                             
                             {/* Load More Button */}
                             {messages.length > 0 && (
-                                <div className="p-4 border-t border-[#E4E4E7]">
+                                <div className="sticky bottom-0 p-3 bg-white border-t border-[#E4E4E7] shadow-sm">
                                     {hasMore && messages.length < 2500 ? (
                                         <Button
                                             variant="outline"
@@ -419,7 +419,7 @@ const DashboardPage = () => {
                                         </Button>
                                     ) : (
                                         <p className="text-center text-sm text-[#71717A]">
-                                            {messages.length} email(s) chargé(s) - Tous les emails sont affichés
+                                            {messages.length} email(s) - Tout affiché
                                         </p>
                                     )}
                                 </div>
