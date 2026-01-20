@@ -527,27 +527,6 @@ async def get_messages(
             ))
         
         return messages
-        
-        if response.status_code != 200:
-            logger.error(f"Failed to get messages: {response.text}")
-            raise HTTPException(status_code=response.status_code, detail="Failed to get messages")
-        
-        data = response.json()
-        messages = []
-        for msg in data.get('value', []):
-            from_info = msg.get('from', {}).get('emailAddress', {})
-            messages.append(EmailPreview(
-                id=msg['id'],
-                subject=msg.get('subject', '(No Subject)'),
-                from_address=from_info.get('address', ''),
-                from_name=from_info.get('name', ''),
-                received_at=msg.get('receivedDateTime', ''),
-                body_preview=msg.get('bodyPreview', ''),
-                is_read=msg.get('isRead', False),
-                folder_id=msg.get('parentFolderId', '')
-            ))
-        
-        return messages
 
 
 @mail_router.get("/messages/{message_id}")
