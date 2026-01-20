@@ -287,8 +287,25 @@ async def login():
 
 
 @auth_router.get("/callback")
-async def auth_callback(code: str = Query(...), state: str = Query(None)):
+async def auth_callback(
+    code: str = Query(default=None), 
+    state: str = Query(default=None),
+    error: str = Query(default=None),
+    error_description: str = Query(default=None)
+):
     """Handle OAuth callback from Microsoft"""
+    # Handle Microsoft errors
+    if error:
+        logger.error(f"OAuth error: {error} - {error_description}")
+        frontend_url = os.environ.get('FRONTEND_URL', 'http://localhost:3000')
+        return RedirectResponse(
+            url=f"{frontend_url}/login?error={urllib.parse.quote(error_description or error)}",
+            status_code=302
+        )
+    
+    if not code:
+        raise HTTPException(status_code=400, detail="Authorization code missing")
+    
     token_url = f"https://login.microsoftonline.com/{MS_TENANT_ID}/oauth2/v2.0/token"
     data = {
         "client_id": MS_CLIENT_ID,
