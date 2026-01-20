@@ -494,7 +494,7 @@ async def get_messages(
     if filters:
         params["$filter"] = " and ".join(filters)
     
-    async with httpx.AsyncClient() as http_client:
+    async with httpx.AsyncClient(timeout=60.0) as http_client:
         response = await http_client.get(
             f"https://graph.microsoft.com/v1.0/me/mailFolders/{folder_id}/messages",
             headers={"Authorization": f"Bearer {user.access_token}"},
