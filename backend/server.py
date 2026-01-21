@@ -757,11 +757,14 @@ async def analyze_emails(request: ClassifyRequest, token: str = Query(...)):
     # Process emails in parallel (batch of 10)
     results = []
     async with httpx.AsyncClient(timeout=60.0) as http_client:
-        batch_size = 10
+        batch_size = 5  # Reduced to avoid rate limits
         for i in range(0, len(request.message_ids), batch_size):
             batch = request.message_ids[i:i + batch_size]
             batch_results = await asyncio.gather(*[process_email(mid, http_client) for mid in batch])
             results.extend([r for r in batch_results if r is not None])
+            # Add delay between batches to avoid rate limits
+            if i + batch_size < len(request.message_ids):
+                await asyncio.sleep(2)
     
     return results
 
