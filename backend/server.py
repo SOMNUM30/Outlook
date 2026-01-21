@@ -246,16 +246,19 @@ If the email matches any keywords or criteria from a rule, classify it with that
         )
         
         result_text = response.choices[0].message.content.strip()
+        logger.info(f"AI Response: {result_text}")
         
         # Parse the JSON response
         try:
             result = json.loads(result_text)
+            logger.info(f"Parsed result: {result}")
             # Verify rule_name is valid
             if result.get('rule_name') not in rule_names and result.get('rule_name') != 'none':
                 # Try to find closest match
                 for name in rule_names:
                     if name.lower() in result.get('rule_name', '').lower() or result.get('rule_name', '').lower() in name.lower():
                         result['rule_name'] = name
+                        logger.info(f"Matched to rule: {name}")
                         break
             return result
         except json.JSONDecodeError:
