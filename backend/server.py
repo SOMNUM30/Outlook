@@ -280,9 +280,8 @@ If the email matches any keywords or criteria from a rule, classify it with that
                 continue
             logger.error(f"AI classification error: {e}")
             return {"rule_name": "none", "confidence": 0, "reason": str(e)}
-    except Exception as e:
-        logger.error(f"AI classification error: {e}")
-        return {"rule_name": "none", "confidence": 0, "reason": str(e)}
+    
+    return {"rule_name": "none", "confidence": 0, "reason": "Max retries reached"}
 
 
 # ==================== AUTH ROUTES ====================
