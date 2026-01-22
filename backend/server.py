@@ -209,6 +209,8 @@ async def classify_email_with_ai(email_body: str, email_subject: str, rules: Lis
     if not OPENAI_API_KEY:
         return {"rule_name": "none", "confidence": 0, "reason": "OpenAI API key not configured"}
     
+    import asyncio
+    
     # Build rules list with exact names
     rule_names = [r['name'] for r in rules if r.get('is_active', True)]
     rules_description = "\n".join([
@@ -221,7 +223,7 @@ async def classify_email_with_ai(email_body: str, email_subject: str, rules: Lis
 EMAIL SUBJECT: {email_subject}
 
 EMAIL BODY:
-{email_body[:2000]}
+{email_body[:1500]}
 
 AVAILABLE RULES:
 {rules_description}
@@ -233,41 +235,51 @@ Respond with a JSON object:
 
 If the email matches any keywords or criteria from a rule, classify it with that rule. Only respond "none" if the email clearly doesn't match ANY rule."""
 
-    try:
-        client = openai.AsyncOpenAI(api_key=OPENAI_API_KEY)
-        
-        response = await client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
-                {"role": "system", "content": f"You are an email classifier. You MUST return the rule_name as EXACTLY one of: {rule_names} or 'none'. No variations allowed."},
-                {"role": "user", "content": prompt}
-            ],
-            temperature=0.1
-        )
-        
-        result_text = response.choices[0].message.content.strip()
-        logger.info(f"AI Response: {result_text}")
-        
-        # Parse the JSON response
+    # Retry up to 3 times with increasing delay
+    for attempt in range(3):
         try:
-            result = json.loads(result_text)
-            logger.info(f"Parsed result: {result}")
-            # Verify rule_name is valid
-            if result.get('rule_name') not in rule_names and result.get('rule_name') != 'none':
-                # Try to find closest match
-                for name in rule_names:
-                    if name.lower() in result.get('rule_name', '').lower() or result.get('rule_name', '').lower() in name.lower():
-                        result['rule_name'] = name
-                        logger.info(f"Matched to rule: {name}")
-                        break
-            return result
-        except json.JSONDecodeError:
-            # Try to extract JSON from response
-            import re
-            json_match = re.search(r'\{[^}]+\}', result_text)
-            if json_match:
-                return json.loads(json_match.group())
-            return {"rule_name": "none", "confidence": 0, "reason": "Failed to parse AI response"}
+            client = openai.AsyncOpenAI(api_key=OPENAI_API_KEY)
+            
+            response = await client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {"role": "system", "content": f"You are an email classifier. You MUST return the rule_name as EXACTLY one of: {rule_names} or 'none'. No variations allowed."},
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.1
+            )
+            
+            result_text = response.choices[0].message.content.strip()
+            logger.info(f"AI Response: {result_text}")
+            
+            # Parse the JSON response
+            try:
+                result = json.loads(result_text)
+                logger.info(f"Parsed result: {result}")
+                # Verify rule_name is valid
+                if result.get('rule_name') not in rule_names and result.get('rule_name') != 'none':
+                    # Try to find closest match
+                    for name in rule_names:
+                        if name.lower() in result.get('rule_name', '').lower() or result.get('rule_name', '').lower() in name.lower():
+                            result['rule_name'] = name
+                            logger.info(f"Matched to rule: {name}")
+                            break
+                return result
+            except json.JSONDecodeError:
+                # Try to extract JSON from response
+                import re
+                json_match = re.search(r'\{[^}]+\}', result_text)
+                if json_match:
+                    return json.loads(json_match.group())
+                return {"rule_name": "none", "confidence": 0, "reason": "Failed to parse AI response"}
+        except Exception as e:
+            if "429" in str(e) and attempt < 2:
+                wait_time = (attempt + 1) * 5  # 5s, 10s
+                logger.info(f"Rate limited, waiting {wait_time}s before retry...")
+                await asyncio.sleep(wait_time)
+                continue
+            logger.error(f"AI classification error: {e}")
+            return {"rule_name": "none", "confidence": 0, "reason": str(e)}
     except Exception as e:
         logger.error(f"AI classification error: {e}")
         return {"rule_name": "none", "confidence": 0, "reason": str(e)}
