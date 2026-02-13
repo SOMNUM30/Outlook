@@ -41,6 +41,7 @@ const DashboardPage = () => {
     const [stats, setStats] = useState(null);
     const [hasMore, setHasMore] = useState(true);
     const [emailFilter, setEmailFilter] = useState('read'); // 'all', 'unread', 'read'
+    const [classifyFilter, setClassifyFilter] = useState('all'); // 'all', 'matched', 'no-match'
 
     // Load folders
     const loadFolders = useCallback(async () => {
