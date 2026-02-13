@@ -284,6 +284,19 @@ const DashboardPage = () => {
                             </SelectContent>
                         </Select>
 
+                        {classificationResults.length > 0 && (
+                            <Select value={classifyFilter} onValueChange={setClassifyFilter}>
+                                <SelectTrigger className="w-36" data-testid="classify-filter-select">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">Tous ({messages.length})</SelectItem>
+                                    <SelectItem value="matched">Classés ({classificationResults.filter(r => r.confidence > 0 && r.rule_applied !== 'none').length})</SelectItem>
+                                    <SelectItem value="no-match">Sans correspondance ({classificationResults.filter(r => r.confidence === 0 || r.rule_applied === 'none').length})</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        )}
+
                         <Button
                             variant="outline"
                             size="icon"
