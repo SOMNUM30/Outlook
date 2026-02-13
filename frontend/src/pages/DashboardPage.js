@@ -18,6 +18,7 @@ import {
     RefreshCw,
     Sparkles,
     ChevronRight,
+    ChevronLeft,
     AlertCircle,
     CheckCircle2,
     Clock
@@ -44,7 +45,10 @@ const DashboardPage = () => {
     const [classifyFilter, setClassifyFilter] = useState('all'); // 'all', 'matched', 'no-match'
     const [currentPage, setCurrentPage] = useState(1);
     const [totalEmails, setTotalEmails] = useState(0);
-    const emailsPerPage = 500;
+    const [totalPages, setTotalPages] = useState(1);
+    const [hasNextPage, setHasNextPage] = useState(false);
+    const [hasPreviousPage, setHasPreviousPage] = useState(false);
+    const emailsPerPage = 1000;
 
     // Load folders
     const loadFolders = useCallback(async () => {
@@ -61,7 +65,7 @@ const DashboardPage = () => {
     }, []);
 
     // Load messages
-    const loadMessages = useCallback(async (folderId, reset = true, filter = 'read') => {
+    const loadMessages = useCallback(async (folderId, page = 1, filter = 'read', reset = true) => {
         try {
             setIsLoadingMessages(true);
             if (reset) {
@@ -69,8 +73,13 @@ const DashboardPage = () => {
                 setClassificationResults([]);
                 setMessages([]);
             }
-            const data = await mailApi.getMessages(folderId, 1000, 0, filter);
-            setMessages(data);
+            const data = await mailApi.getMessages(folderId, page, emailsPerPage, filter);
+            setMessages(data.messages);
+            setTotalEmails(data.total);
+            setTotalPages(data.total_pages);
+            setCurrentPage(data.page);
+            setHasNextPage(data.has_next);
+            setHasPreviousPage(data.has_previous);
             setHasMore(false);
         } catch (error) {
             toast.error('Erreur lors du chargement des emails');
@@ -78,26 +87,28 @@ const DashboardPage = () => {
         } finally {
             setIsLoadingMessages(false);
         }
-    }, []);
+    }, [emailsPerPage]);
 
-    // Load more messages
-    const loadMoreMessages = useCallback(async () => {
-        try {
-            setIsLoadingMore(true);
-            const data = await mailApi.getMessages(selectedFolder, 100, messages.length, emailFilter);
-            if (data.length > 0) {
-                setMessages(prev => [...prev, ...data]);
-                setHasMore(data.length === 100 && messages.length + data.length < 500);
-            } else {
-                setHasMore(false);
-            }
-        } catch (error) {
-            setHasMore(false);
-            console.error(error);
-        } finally {
-            setIsLoadingMore(false);
+    // Go to next page
+    const goToNextPage = useCallback(async () => {
+        if (hasNextPage) {
+            await loadMessages(selectedFolder, currentPage + 1, emailFilter, true);
         }
-    }, [selectedFolder, messages.length, emailFilter]);
+    }, [hasNextPage, selectedFolder, currentPage, emailFilter, loadMessages]);
+
+    // Go to previous page
+    const goToPreviousPage = useCallback(async () => {
+        if (hasPreviousPage) {
+            await loadMessages(selectedFolder, currentPage - 1, emailFilter, true);
+        }
+    }, [hasPreviousPage, selectedFolder, currentPage, emailFilter, loadMessages]);
+
+    // Go to specific page
+    const goToPage = useCallback(async (page) => {
+        if (page >= 1 && page <= totalPages) {
+            await loadMessages(selectedFolder, page, emailFilter, true);
+        }
+    }, [selectedFolder, totalPages, emailFilter, loadMessages]);
 
     // Load email detail
     const loadEmailDetail = useCallback(async (messageId) => {
@@ -137,7 +148,7 @@ const DashboardPage = () => {
     }, [loadFolders, loadRules, loadStats]);
 
     useEffect(() => {
-        loadMessages(selectedFolder, true, emailFilter);
+        loadMessages(selectedFolder, 1, emailFilter, true);
     }, [selectedFolder, emailFilter, loadMessages]);
 
     useEffect(() => {
@@ -319,7 +330,7 @@ const DashboardPage = () => {
                         <Button
                             variant="outline"
                             size="icon"
-                            onClick={() => loadMessages(selectedFolder, true, emailFilter)}
+                            onClick={() => loadMessages(selectedFolder, currentPage, emailFilter, true)}
                             disabled={isLoadingMessages}
                             data-testid="refresh-button"
                         >
@@ -342,9 +353,11 @@ const DashboardPage = () => {
                                 </span>
                             </div>
                             
-                            {/* Email count */}
-                            {filteredMessages.length > 0 && (
-                                <span className="text-xs text-[#71717A]">✓ {filteredMessages.length} emails</span>
+                            {/* Email count with pagination info */}
+                            {totalEmails > 0 && (
+                                <span className="text-xs text-[#71717A]">
+                                    Page {currentPage}/{totalPages} • {totalEmails} emails au total
+                                </span>
                             )}
                         </div>
 
@@ -395,6 +408,62 @@ const DashboardPage = () => {
                         </div>
                     ) : (
                         <div>
+                            {/* Pagination Controls - Top */}
+                            {totalPages > 1 && (
+                                <div className="flex items-center justify-center gap-2 py-3 px-4 bg-[#FAFAFA] border-b border-[#E4E4E7]" data-testid="pagination-controls-top">
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={goToPreviousPage}
+                                        disabled={!hasPreviousPage || isLoadingMessages}
+                                        data-testid="prev-page-btn"
+                                    >
+                                        <ChevronLeft className="w-4 h-4 mr-1" />
+                                        Précédent
+                                    </Button>
+                                    
+                                    <div className="flex items-center gap-1">
+                                        {/* Show page numbers */}
+                                        {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                                            let pageNum;
+                                            if (totalPages <= 5) {
+                                                pageNum = i + 1;
+                                            } else if (currentPage <= 3) {
+                                                pageNum = i + 1;
+                                            } else if (currentPage >= totalPages - 2) {
+                                                pageNum = totalPages - 4 + i;
+                                            } else {
+                                                pageNum = currentPage - 2 + i;
+                                            }
+                                            return (
+                                                <Button
+                                                    key={pageNum}
+                                                    variant={currentPage === pageNum ? "default" : "outline"}
+                                                    size="sm"
+                                                    className={`w-8 h-8 p-0 ${currentPage === pageNum ? 'bg-[#18181B]' : ''}`}
+                                                    onClick={() => goToPage(pageNum)}
+                                                    disabled={isLoadingMessages}
+                                                    data-testid={`page-${pageNum}-btn`}
+                                                >
+                                                    {pageNum}
+                                                </Button>
+                                            );
+                                        })}
+                                    </div>
+                                    
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={goToNextPage}
+                                        disabled={!hasNextPage || isLoadingMessages}
+                                        data-testid="next-page-btn"
+                                    >
+                                        Suivant
+                                        <ChevronRight className="w-4 h-4 ml-1" />
+                                    </Button>
+                                </div>
+                            )}
+                            
                             <div className="divide-y divide-[#E4E4E7]">
                                 {filteredMessages.map((message, index) => {
                                     const result = getClassificationResult(message.id);
@@ -454,6 +523,35 @@ const DashboardPage = () => {
                                 );
                             })}
                             </div>
+                            
+                            {/* Pagination Controls - Bottom */}
+                            {totalPages > 1 && (
+                                <div className="flex items-center justify-center gap-2 py-3 px-4 bg-[#FAFAFA] border-t border-[#E4E4E7]" data-testid="pagination-controls-bottom">
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={goToPreviousPage}
+                                        disabled={!hasPreviousPage || isLoadingMessages}
+                                    >
+                                        <ChevronLeft className="w-4 h-4 mr-1" />
+                                        Précédent
+                                    </Button>
+                                    
+                                    <span className="text-sm text-[#71717A] mx-4">
+                                        Page {currentPage} sur {totalPages}
+                                    </span>
+                                    
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={goToNextPage}
+                                        disabled={!hasNextPage || isLoadingMessages}
+                                    >
+                                        Suivant
+                                        <ChevronRight className="w-4 h-4 ml-1" />
+                                    </Button>
+                                </div>
+                            )}
                         </div>
                     )}
                 </ScrollArea>
