@@ -492,7 +492,7 @@ async def get_child_folders(folder_id: str, token: str = Query(...)):
 async def get_messages(
     token: str = Query(...),
     folder_id: str = Query(default="inbox"),
-    top: int = Query(default=100, le=500),
+    top: int = Query(default=100, le=1000),
     skip: int = Query(default=0),
     filter_read: str = Query(default="all"),  # 'all', 'unread', 'read'
     exclude_flagged: bool = Query(default=True)  # Exclude pinned/flagged emails
