@@ -155,12 +155,28 @@ const DashboardPage = () => {
         });
     };
 
-    // Select all messages
+    // Select all messages (uses filtered list)
     const handleSelectAll = () => {
-        if (selectedMessages.length === messages.length) {
+        // Get current filtered messages
+        let currentFiltered = messages;
+        if (classifyFilter !== 'all' && classificationResults.length > 0) {
+            currentFiltered = messages.filter(msg => {
+                const result = classificationResults.find(r => r.message_id === msg.id);
+                if (!result) return classifyFilter === 'all';
+                if (classifyFilter === 'matched') {
+                    return result.confidence > 0 && result.rule_applied !== 'none';
+                }
+                if (classifyFilter === 'no-match') {
+                    return result.confidence === 0 || result.rule_applied === 'none';
+                }
+                return true;
+            });
+        }
+        
+        if (selectedMessages.length === currentFiltered.length) {
             setSelectedMessages([]);
         } else {
-            setSelectedMessages(messages.map(m => m.id));
+            setSelectedMessages(currentFiltered.map(m => m.id));
         }
     };
 
