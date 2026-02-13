@@ -213,7 +213,7 @@ const DashboardPage = () => {
                 results = await classifyApi.executeClassification(selectedMessages);
                 const movedCount = results.filter(r => r.moved).length;
                 toast.success(`${movedCount} email(s) classé(s) avec succès`);
-                loadMessages(selectedFolder);
+                loadMessages(selectedFolder, currentPage, emailFilter, true);
                 loadStats();
             } else {
                 results = await classifyApi.analyzeEmails(selectedMessages);
