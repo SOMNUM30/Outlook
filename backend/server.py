@@ -765,16 +765,17 @@ async def analyze_emails(request: ClassifyRequest, token: str = Query(...)):
             logger.error(f"Error processing email {message_id}: {e}")
             return None
     
-    # Process emails one by one with delay (to respect 3 RPM limit)
+    # Process emails in parallel (batch of 5)
     results = []
     async with httpx.AsyncClient(timeout=60.0) as http_client:
-        for i, message_id in enumerate(request.message_ids):
-            result = await process_email(message_id, http_client)
-            if result:
-                results.append(result)
-            # Wait 25 seconds between each email to respect 3 RPM limit
-            if i < len(request.message_ids) - 1:
-                await asyncio.sleep(25)
+        batch_size = 5
+        for i in range(0, len(request.message_ids), batch_size):
+            batch = request.message_ids[i:i + batch_size]
+            batch_results = await asyncio.gather(*[process_email(mid, http_client) for mid in batch])
+            results.extend([r for r in batch_results if r is not None])
+            # Small delay between batches
+            if i + batch_size < len(request.message_ids):
+                await asyncio.sleep(1)
     
     return results
 
