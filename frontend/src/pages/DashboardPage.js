@@ -66,7 +66,7 @@ const DashboardPage = () => {
                 setClassificationResults([]);
                 setMessages([]);
             }
-            const data = await mailApi.getMessages(folderId, 500, 0, filter);
+            const data = await mailApi.getMessages(folderId, 1000, 0, filter);
             setMessages(data);
             setHasMore(false);
         } catch (error) {
