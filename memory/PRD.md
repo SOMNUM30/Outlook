@@ -1,50 +1,52 @@
 # Outlook AI Classifier - PRD
 
 ## Original Problem Statement
-Créer un connecteur Outlook pour classer automatiquement les emails dans des dossiers déjà créés, sans les déplacer manuellement. Compatible Outlook 365 (ancienne et nouvelle version).
+Créer un connecteur Outlook pour classer automatiquement les emails dans des dossiers déjà créés, sans les déplacer manuellement. Compatible Outlook 365 (ancienne et nouvelle version). Déploiement sur Render.
 
 ## User Choices
 - Classification par corps de mail (contenu)
-- OpenAI GPT-5.2 pour l'IA
+- OpenAI GPT-4o-mini pour l'IA
 - Microsoft Graph API avec OAuth pour accès complet à Outlook 365
+- Affichage de 1000 e-mails par page avec pagination
 
 ## Architecture
 
 ### Tech Stack
-- **Frontend**: React + Tailwind CSS + Shadcn/UI
+- **Frontend**: React 18 + Tailwind CSS + Shadcn/UI
 - **Backend**: FastAPI (Python)
-- **Database**: MongoDB
-- **AI**: GPT-5.2 via Emergent LLM Key
+- **Database**: MongoDB Atlas
+- **AI**: OpenAI GPT-4o-mini (API standard)
 - **Auth**: Microsoft Graph API OAuth 2.0
+- **Deployment**: Render
 
 ### Key Components
 1. **AuthContext** - Gestion de l'authentification Microsoft
 2. **MailAPI** - Interaction avec Microsoft Graph (emails, dossiers)
 3. **RulesEngine** - Gestion des règles de classification
-4. **AIClassifier** - Classification via GPT-5.2
-
-## User Personas
-1. **Professionnel débordé** - Reçoit 100+ emails/jour, veut automatiser le tri
-2. **Manager** - Veut des emails clients dans un dossier, factures dans un autre
-3. **Consultant** - Multiple projets, veut classifier par projet automatiquement
+4. **AIClassifier** - Classification via GPT-4o-mini
 
 ## Core Requirements (Static)
 - [x] Connexion Microsoft OAuth
 - [x] Liste des emails par dossier
-- [x] Liste des dossiers Outlook
+- [x] Liste des dossiers Outlook (avec sous-dossiers)
 - [x] Création de règles de classification
 - [x] Classification IA par contenu
 - [x] Déplacement automatique des emails
 - [x] Historique des classifications
 - [x] Statistiques
+- [x] Filtres (lu/non lu, classé/sans correspondance)
+- [x] Exclusion des e-mails épinglés
+- [x] Pagination des e-mails (1000 par page)
 
-## What's Been Implemented (January 2025)
+## What's Been Implemented
 
 ### Backend (FastAPI)
 - OAuth flow avec Microsoft Graph API
 - Endpoints pour emails, dossiers, règles, classification
-- Intégration GPT-5.2 via emergentintegrations
+- Intégration OpenAI GPT-4o-mini (API standard)
 - Historique et statistiques en MongoDB
+- **Pagination des e-mails** avec `$count` de Microsoft Graph
+- Traitement parallèle optimisé pour Tier 1 (batch de 10)
 
 ### Frontend (React)
 - Page de connexion Microsoft
@@ -52,12 +54,14 @@ Créer un connecteur Outlook pour classer automatiquement les emails dans des do
 - Page de gestion des règles
 - Page d'historique avec statistiques
 - Design Swiss Utility (noir/blanc, minimaliste)
+- **Boutons de pagination** (Précédent/Suivant/Numéros de page)
+- Affichage du total d'e-mails et numéro de page
 
 ## Prioritized Backlog
 
-### P0 (Critical - Requires User Action)
-- [ ] Configurer MS_CLIENT_ID et MS_CLIENT_SECRET dans Azure Portal
-- [ ] Définir MS_REDIRECT_URI correspondant
+### P0 (Fait - Done)
+- [x] Pagination des e-mails (1000 par page avec navigation)
+- [x] Optimisation du traitement parallèle pour compte Tier 1
 
 ### P1 (High Priority)
 - [ ] Classification automatique programmée (cron)
@@ -65,9 +69,8 @@ Créer un connecteur Outlook pour classer automatiquement les emails dans des do
 - [ ] Batch classification de tous les nouveaux emails
 
 ### P2 (Medium Priority)
-- [ ] Mode aperçu avant classification
+- [ ] Support des boîtes aux lettres partagées
 - [ ] Export des règles
-- [ ] Sous-dossiers support
 - [ ] Multi-compte Outlook
 
 ### P3 (Nice to Have)
@@ -75,8 +78,14 @@ Créer un connecteur Outlook pour classer automatiquement les emails dans des do
 - [ ] App mobile
 - [ ] Webhooks pour notifications temps réel
 
-## Next Tasks
-1. User: Créer une app dans Azure Portal et configurer les credentials
-2. Tester le flow OAuth complet
-3. Créer des règles de classification
-4. Tester la classification avec GPT-5.2
+## API Endpoints Clés
+- `GET /api/mail/messages` - Liste paginée des e-mails (page, per_page, filter_read)
+- `GET /api/mail/folders` - Liste des dossiers avec sous-dossiers
+- `POST /api/classify/analyze` - Analyse IA des e-mails
+- `POST /api/classify/execute` - Classification et déplacement
+
+## Notes Techniques
+- Le compte OpenAI de l'utilisateur est maintenant en Tier 1
+- Batch size augmenté à 10 (vs 5 avant)
+- Délai entre batches réduit à 0.5s (vs 1s avant)
+- L'API Microsoft Graph nécessite `ConsistencyLevel: eventual` pour `$count`
