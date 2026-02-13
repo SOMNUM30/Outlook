@@ -312,7 +312,7 @@ const DashboardPage = () => {
                         <div className="flex items-center gap-3">
                             <div className="flex items-center gap-2">
                                 <Checkbox
-                                    checked={selectedMessages.length === messages.length && messages.length > 0}
+                                    checked={selectedMessages.length === filteredMessages.length && filteredMessages.length > 0}
                                     onCheckedChange={handleSelectAll}
                                     data-testid="select-all-checkbox"
                                 />
@@ -324,8 +324,8 @@ const DashboardPage = () => {
                             </div>
                             
                             {/* Email count */}
-                            {messages.length > 0 && (
-                                <span className="text-xs text-[#71717A]">✓ {messages.length} emails</span>
+                            {filteredMessages.length > 0 && (
+                                <span className="text-xs text-[#71717A]">✓ {filteredMessages.length} emails</span>
                             )}
                         </div>
 
