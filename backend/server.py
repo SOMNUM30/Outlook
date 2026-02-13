@@ -488,16 +488,26 @@ async def get_child_folders(folder_id: str, token: str = Query(...)):
         return folders
 
 
-@mail_router.get("/messages", response_model=List[EmailPreview])
+class PaginatedMessages(BaseModel):
+    messages: List[EmailPreview]
+    total: int
+    page: int
+    per_page: int
+    total_pages: int
+    has_next: bool
+    has_previous: bool
+
+
+@mail_router.get("/messages")
 async def get_messages(
     token: str = Query(...),
     folder_id: str = Query(default="inbox"),
-    top: int = Query(default=100, le=1000),
-    skip: int = Query(default=0),
+    page: int = Query(default=1, ge=1),
+    per_page: int = Query(default=1000, le=1000),
     filter_read: str = Query(default="all"),  # 'all', 'unread', 'read'
     exclude_flagged: bool = Query(default=True)  # Exclude pinned/flagged emails
 ):
-    """Get messages from a folder"""
+    """Get messages from a folder with pagination"""
     user = await get_current_user(token)
     
     # Build filter
@@ -507,11 +517,15 @@ async def get_messages(
     elif filter_read == "read":
         filters.append("isRead eq true")
     
+    # Calculate skip based on page
+    skip = (page - 1) * per_page
+    
     params = {
         "$select": "id,subject,from,receivedDateTime,bodyPreview,isRead,parentFolderId,flag",
-        "$top": top,
+        "$top": per_page,
         "$skip": skip,
-        "$orderby": "receivedDateTime desc"
+        "$orderby": "receivedDateTime desc",
+        "$count": "true"  # Request total count
     }
     
     if filters:
@@ -520,7 +534,10 @@ async def get_messages(
     async with httpx.AsyncClient(timeout=60.0) as http_client:
         response = await http_client.get(
             f"https://graph.microsoft.com/v1.0/me/mailFolders/{folder_id}/messages",
-            headers={"Authorization": f"Bearer {user.access_token}"},
+            headers={
+                "Authorization": f"Bearer {user.access_token}",
+                "ConsistencyLevel": "eventual"  # Required for $count
+            },
             params=params
         )
         
@@ -529,6 +546,8 @@ async def get_messages(
             raise HTTPException(status_code=response.status_code, detail="Failed to get messages")
         
         data = response.json()
+        total_count = data.get('@odata.count', 0)
+        
         messages = []
         for msg in data.get('value', []):
             # Skip flagged emails if exclude_flagged is True
@@ -549,7 +568,17 @@ async def get_messages(
                 folder_id=msg.get('parentFolderId', '')
             ))
         
-        return messages
+        total_pages = (total_count + per_page - 1) // per_page if total_count > 0 else 1
+        
+        return PaginatedMessages(
+            messages=messages,
+            total=total_count,
+            page=page,
+            per_page=per_page,
+            total_pages=total_pages,
+            has_next=page < total_pages,
+            has_previous=page > 1
+        )
 
 
 @mail_router.get("/messages/{message_id}")

@@ -29,8 +29,8 @@ export const mailApi = {
         return response.data;
     },
 
-    getMessages: async (folderId = 'inbox', top = 250, skip = 0, filterRead = 'all') => {
-        const response = await api.get(`/mail/messages?${getTokenParam()}&folder_id=${folderId}&top=${top}&skip=${skip}&filter_read=${filterRead}`);
+    getMessages: async (folderId = 'inbox', page = 1, perPage = 1000, filterRead = 'all') => {
+        const response = await api.get(`/mail/messages?${getTokenParam()}&folder_id=${folderId}&page=${page}&per_page=${perPage}&filter_read=${filterRead}`);
         return response.data;
     },
 
