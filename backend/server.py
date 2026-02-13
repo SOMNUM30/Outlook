@@ -108,13 +108,13 @@ class ClassifiedEmail(BaseModel):
 
 class EmailPreview(BaseModel):
     id: str
-    subject: str
-    from_address: str
-    from_name: str
-    received_at: str
-    body_preview: str
-    is_read: bool
-    folder_id: str
+    subject: Optional[str] = ""
+    from_address: Optional[str] = ""
+    from_name: Optional[str] = ""
+    received_at: Optional[str] = ""
+    body_preview: Optional[str] = ""
+    is_read: Optional[bool] = False
+    folder_id: Optional[str] = ""
 
 
 class FolderInfo(BaseModel):
