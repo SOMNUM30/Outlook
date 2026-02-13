@@ -203,6 +203,26 @@ const DashboardPage = () => {
         return classificationResults.find(r => r.message_id === messageId);
     };
 
+    // Filter messages based on classification results
+    const getFilteredMessages = () => {
+        if (classifyFilter === 'all' || classificationResults.length === 0) {
+            return messages;
+        }
+        return messages.filter(msg => {
+            const result = getClassificationResult(msg.id);
+            if (!result) return classifyFilter === 'all';
+            if (classifyFilter === 'matched') {
+                return result.confidence > 0 && result.rule_applied !== 'none';
+            }
+            if (classifyFilter === 'no-match') {
+                return result.confidence === 0 || result.rule_applied === 'none';
+            }
+            return true;
+        });
+    };
+
+    const filteredMessages = getFilteredMessages();
+
     // Get confidence badge style
     const getConfidenceBadge = (confidence) => {
         if (confidence >= 0.7) {
