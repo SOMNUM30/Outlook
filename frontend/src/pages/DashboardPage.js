@@ -369,7 +369,7 @@ const DashboardPage = () => {
                         <div className="flex items-center justify-center h-32">
                             <div className="spinner"></div>
                         </div>
-                    ) : messages.length === 0 ? (
+                    ) : filteredMessages.length === 0 ? (
                         <div className="empty-state">
                             <Inbox className="w-12 h-12 text-[#A1A1AA] mb-4" />
                             <p className="text-[#71717A]">Aucun email dans ce dossier</p>
@@ -377,7 +377,7 @@ const DashboardPage = () => {
                     ) : (
                         <div>
                             <div className="divide-y divide-[#E4E4E7]">
-                                {messages.map((message, index) => {
+                                {filteredMessages.map((message, index) => {
                                     const result = getClassificationResult(message.id);
                                     return (
                                         <div
