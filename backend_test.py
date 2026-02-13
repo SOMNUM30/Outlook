@@ -10,7 +10,7 @@ import json
 from datetime import datetime
 
 class OutlookClassifierAPITester:
-    def __init__(self, base_url="https://folder-automation-1.preview.emergentagent.com"):
+    def __init__(self, base_url="https://outlook-ai-sorter.preview.emergentagent.com"):
         self.base_url = base_url
         self.token = None
         self.tests_run = 0
